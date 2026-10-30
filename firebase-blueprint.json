@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "Device": {
+      "title": "Device",
+      "description": "Connected WiFi device",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9_-]+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "ip": { "type": "string", "pattern": "^[0-9.]+$" },
+        "mac": { "type": "string", "pattern": "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$" },
+        "type": { "type": "string", "enum": ["smartphone", "laptop", "iot", "router", "printer", "server", "camera"] },
+        "apId": { "type": "string", "pattern": "^[a-zA-Z0-9_-]+$" },
+        "signalStrength": { "type": "integer" },
+        "status": { "type": "string", "enum": ["online", "idle", "blocked", "guest"] }
+      },
+      "required": ["id", "name", "mac", "type", "apId", "status"]
+    },
+    "AccessPoint": {
+      "title": "AccessPoint",
+      "description": "WiFi Access Point",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9_-]+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "provider": { "type": "string" },
+        "status": { "type": "string", "enum": ["online", "updating", "warning", "offline"] }
+      },
+      "required": ["id", "name", "provider", "status"]
+    },
+    "CredentialItem": {
+      "title": "CredentialItem",
+      "description": "Stored network credential",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9_-]+$" },
+        "title": { "type": "string", "maxLength": 100 },
+        "category": { "type": "string" },
+        "encryptedPassword": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "encryptedPassword"]
+    }
+  },
+  "firestore": {
+    "/devices/{deviceId}": {
+      "schema": "Device",
+      "description": "Connected devices"
+    },
+    "/aps/{apId}": {
+      "schema": "AccessPoint",
+      "description": "Access points"
+    },
+    "/credentials/{credId}": {
+      "schema": "CredentialItem",
+      "description": "Credential vault items"
+    }
+  }
+}

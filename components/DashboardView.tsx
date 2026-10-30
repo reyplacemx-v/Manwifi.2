@@ -68,10 +68,12 @@ export default function DashboardView({
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setScheduleEnabled(parsed.enabled);
-        setScheduleTime(parsed.time);
-        setScheduleFrequency(parsed.frequency);
-        setScheduleTask(parsed.task);
+        setTimeout(() => {
+          setScheduleEnabled(parsed.enabled);
+          setScheduleTime(parsed.time);
+          setScheduleFrequency(parsed.frequency);
+          setScheduleTask(parsed.task);
+        }, 0);
       } catch (e) {
         console.error(e);
       }

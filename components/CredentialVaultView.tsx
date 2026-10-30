@@ -208,7 +208,7 @@ export default function CredentialVaultView({ credentials, onAddCredential }: Cr
                 </div>
 
                 <p className="text-xs text-slate-400 mt-3 italic bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/50">
-                  "{cred.notes}"
+                  &ldquo;{cred.notes}&rdquo;
                 </p>
               </div>
 

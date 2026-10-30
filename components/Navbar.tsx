@@ -18,6 +18,7 @@ import {
   Satellite,
   Bell
 } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   activeTab: string;
@@ -71,7 +72,7 @@ export default function Navbar({ activeTab, setActiveTab, deviceCount, apCount, 
             </div>
           </div>
 
-          {/* Quick Stats & Manual Button */}
+          {/* Quick Stats & Action Buttons */}
           <div className="flex items-center space-x-4">
             <div className="hidden xl:flex items-center space-x-6 bg-slate-950/60 border border-slate-800 px-4 py-2 rounded-xl text-xs text-slate-300">
               <div className="flex items-center space-x-2">
@@ -86,12 +87,14 @@ export default function Navbar({ activeTab, setActiveTab, deviceCount, apCount, 
               </div>
             </div>
 
+            <PWAInstallButton />
+
             <button
               onClick={onOpenManual}
               className="px-3.5 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 hover:from-cyan-500/30 hover:to-blue-600/30 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-cyan-500/10 transition-all cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-cyan-400" />
-              <span>Manual Interactivo</span>
+              <span>Manual</span>
             </button>
           </div>
 

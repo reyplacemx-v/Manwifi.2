@@ -109,7 +109,7 @@ export default function SecurityAuditView({ aps, devices }: SecurityAuditViewPro
             <ShieldCheck className="w-12 h-12 text-cyan-500/40 mx-auto" />
             <p className="text-sm font-bold text-slate-300">Ninguna auditoría activa en este momento</p>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Haga clic en "Iniciar Auditoría de Seguridad" para verificar cifrados, contraseñas root y vulnerabilidades en la infraestructura.
+              Haga clic en &quot;Iniciar Auditoría de Seguridad&quot; para verificar cifrados, contraseñas root y vulnerabilidades en la infraestructura.
             </p>
           </div>
         )}
