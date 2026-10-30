@@ -1,0 +1,21 @@
+{
+  "name": "NexusWave Pro WiFi Manager",
+  "short_name": "NexusWave Pro",
+  "description": "Gestión avanzada de redes WiFi, puentes WDS, Totalplay, Go Wireless y bóveda WPA3.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#06b6d4",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/nexuswave192/192/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/nexuswave512/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

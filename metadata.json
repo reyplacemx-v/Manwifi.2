@@ -1,0 +1,6 @@
+{
+  "name": "NexusWave Pro WiFi Manager",
+  "description": "Advanced WiFi network management, signal optimization, speed tests, guest networks, AP remote control, and encrypted credential vault.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
