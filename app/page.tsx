@@ -19,76 +19,149 @@ import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { ConnectedDevice, AccessPoint, GuestNetwork, CredentialItem, NetworkLog, SpeedTestResult } from '@/lib/types';
-import { initialSpeedTest } from '@/lib/mock-data';
+import { initialDevices, initialAccessPoints, initialGuestNetworks, initialCredentials, initialLogs, initialSpeedTest } from '@/lib/mock-data';
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showManual, setShowManual] = useState(false);
 
-  const [devices, setDevices] = useState<ConnectedDevice[]>([]);
-  const [aps, setAps] = useState<AccessPoint[]>([]);
-  const [guestNetworks, setGuestNetworks] = useState<GuestNetwork[]>([]);
-  const [credentials, setCredentials] = useState<CredentialItem[]>([]);
-  const [logs, setLogs] = useState<NetworkLog[]>([]);
+  const [devices, setDevices] = useState<ConnectedDevice[]>(initialDevices);
+  const [aps, setAps] = useState<AccessPoint[]>(initialAccessPoints);
+  const [guestNetworks, setGuestNetworks] = useState<GuestNetwork[]>(initialGuestNetworks);
+  const [credentials, setCredentials] = useState<CredentialItem[]>(initialCredentials);
+  const [logs, setLogs] = useState<NetworkLog[]>(initialLogs);
   const [latestSpeed, setLatestSpeed] = useState<SpeedTestResult>(initialSpeedTest);
 
   // Real-time synchronization with Firestore
   useEffect(() => {
-    const unsubDevices = onSnapshot(collection(db, 'devices'), (snapshot) => {
-      setDevices(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as ConnectedDevice)));
-    });
-    const unsubAps = onSnapshot(collection(db, 'aps'), (snapshot) => {
-      setAps(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AccessPoint)));
-    });
+    let unsubDevices = () => {};
+    let unsubAps = () => {};
+    let unsubCreds = () => {};
+
+    try {
+      unsubDevices = onSnapshot(collection(db, 'devices'), (snapshot) => {
+        if (!snapshot.empty) {
+          setDevices(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as ConnectedDevice)));
+        }
+      }, (err) => {
+        console.warn('Firestore devices offline/error:', err);
+      });
+
+      unsubAps = onSnapshot(collection(db, 'aps'), (snapshot) => {
+        if (!snapshot.empty) {
+          setAps(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as AccessPoint)));
+        }
+      }, (err) => {
+        console.warn('Firestore aps offline/error:', err);
+      });
+
+      unsubCreds = onSnapshot(collection(db, 'credentials'), (snapshot) => {
+        if (!snapshot.empty) {
+          setCredentials(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as CredentialItem)));
+        }
+      }, (err) => {
+        console.warn('Firestore credentials offline/error:', err);
+      });
+    } catch (e) {
+      console.warn('Error setting up firestore listeners:', e);
+    }
     
     // Check manual
-    const hasSeenManual = localStorage.getItem('nexuswave_seen_manual');
-    if (!hasSeenManual) {
-      setShowManual(true);
-      localStorage.setItem('nexuswave_seen_manual', 'true');
+    try {
+      const hasSeenManual = localStorage.getItem('nexuswave_seen_manual');
+      if (!hasSeenManual) {
+        setTimeout(() => {
+          setShowManual(true);
+        }, 0);
+        localStorage.setItem('nexuswave_seen_manual', 'true');
+      }
+    } catch (e) {
+      console.warn(e);
     }
 
     return () => {
       unsubDevices();
       unsubAps();
+      unsubCreds();
     };
   }, []);
 
-  // Handlers - Updated for Firestore
+  // Handlers - Updated for Firestore with optimistic local updates
   const handleUpdateDeviceStatus = async (deviceId: string, newStatus: 'online' | 'blocked' | 'guest') => {
-    await updateDoc(doc(db, 'devices', deviceId), { status: newStatus });
+    setDevices(prev => prev.map(d => d.id === deviceId ? { ...d, status: newStatus } : d));
+    try {
+      await updateDoc(doc(db, 'devices', deviceId), { status: newStatus });
+    } catch (e) {
+      console.warn('Firestore updateDoc failed:', e);
+    }
   };
 
   const handleForceReconnect = async (deviceId: string) => {
-    await updateDoc(doc(db, 'devices', deviceId), { status: 'online', signalStrength: -40 });
+    setDevices(prev => prev.map(d => d.id === deviceId ? { ...d, status: 'online', signalStrength: -40 } : d));
+    try {
+      await updateDoc(doc(db, 'devices', deviceId), { status: 'online', signalStrength: -40 });
+    } catch (e) {
+      console.warn('Firestore force reconnect update failed:', e);
+    }
   };
 
   const handleAddDevice = async (newDev: ConnectedDevice) => {
-    await setDoc(doc(db, 'devices', newDev.id), newDev);
+    setDevices(prev => [newDev, ...prev]);
+    try {
+      await setDoc(doc(db, 'devices', newDev.id), newDev);
+    } catch (e) {
+      console.warn('Firestore add device failed:', e);
+    }
   };
 
   const handleRebootAp = async (apId: string) => {
-    // Implementation for real reboot
+    const target = aps.find(a => a.id === apId);
+    if (target) {
+      setLogs(prev => [{
+        id: `log-${Date.now()}`,
+        timestamp: 'Hace un momento',
+        type: 'warning',
+        title: 'Punto de Acceso Reiniciado',
+        description: `Se reinició remotamente el AP ${target.name}.`,
+        source: 'Control Remoto AP'
+      }, ...prev]);
+    }
   };
 
   const handleOptimizeChannels = async (apId: string) => {
-    await updateDoc(doc(db, 'aps', apId), { channel5: Math.floor(Math.random() * 40) + 36 });
+    const newCh = Math.floor(Math.random() * 40) + 36;
+    setAps(prev => prev.map(a => a.id === apId ? { ...a, channel5: newCh } : a));
+    try {
+      await updateDoc(doc(db, 'aps', apId), { channel5: newCh });
+    } catch (e) {
+      console.warn('Firestore channel update failed:', e);
+    }
   };
 
   const handleAddAp = async (newAp: AccessPoint) => {
-    await setDoc(doc(db, 'aps', newAp.id), newAp);
+    setAps(prev => [...prev, newAp]);
+    try {
+      await setDoc(doc(db, 'aps', newAp.id), newAp);
+    } catch (e) {
+      console.warn('Firestore add AP failed:', e);
+    }
   };
 
   const handleToggleGuest = async (guestId: string) => {
-    // Implementation
+    setGuestNetworks(prev => prev.map(g => g.id === guestId ? { ...g, enabled: !g.enabled } : g));
   };
 
   const handleAddGuest = async (newGuest: GuestNetwork) => {
-    // Implementation
+    setGuestNetworks(prev => [...prev, newGuest]);
   };
 
   const handleAddCredential = async (newCred: CredentialItem) => {
-    await setDoc(doc(db, 'credentials', newCred.id), newCred);
+    setCredentials(prev => [newCred, ...prev]);
+    try {
+      await setDoc(doc(db, 'credentials', newCred.id), newCred);
+    } catch (e) {
+      console.warn('Firestore add credential failed:', e);
+    }
   };
 
   const handleSaveSpeedResult = (res: SpeedTestResult) => {

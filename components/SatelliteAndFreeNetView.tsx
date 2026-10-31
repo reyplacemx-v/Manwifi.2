@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Globe, Radio, Wifi, Zap, CheckCircle2, RefreshCw, Satellite, ShieldCheck, Sparkles } from 'lucide-react';
+import { Globe, Radio, Wifi, Zap, CheckCircle2, RefreshCw, Satellite, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function SatelliteAndFreeNetView() {
   const [satConnected, setSatConnected] = useState(true);
@@ -10,7 +10,14 @@ export default function SatelliteAndFreeNetView() {
   const [converting, setConverting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Configuration state
+  const [satApiKey, setSatApiKey] = useState('SAT_LINK_8829_XXXX_XXXX');
+
   const handleToggleSat = () => {
+    if (!satApiKey) {
+      alert("Por favor, introduzca una clave API de suscripción satelital válida.");
+      return;
+    }
     setSatConnected(!satConnected);
     setSuccessMsg(!satConnected ? 'Enlace satelital LEO (Starlink / SatCom) activado con éxito.' : 'Enlace satelital pausado.');
     setTimeout(() => setSuccessMsg(null), 3000);
@@ -38,11 +45,19 @@ export default function SatelliteAndFreeNetView() {
       <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Satellite className="w-6 h-6 text-cyan-400" /> Conexiones Satelitales, Internet Gratuito & Conversor de Señal
+            <Satellite className="w-6 h-6 text-cyan-400" /> Conexiones Satelitales & Internet Gratuito Comunitario
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             Gestión de enlaces satelitales LEO, redes comunitarias de acceso libre y conversión de señales externas a WiFi local.
           </p>
+        </div>
+      </div>
+
+      <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 p-4 rounded-xl text-xs flex items-center gap-3">
+        <AlertCircle className="w-6 h-6 text-amber-400 shrink-0" />
+        <div>
+          <p className="font-bold">Aviso importante de configuración</p>
+          <p>Para activar enlaces satelitales o servicios VPN gratuitos, el usuario debe poseer hardware compatible (antenas, módems) y suscripciones activas con el proveedor. Esta interfaz gestiona la configuración técnica de dichas conexiones.</p>
         </div>
       </div>
 
@@ -72,10 +87,13 @@ export default function SatelliteAndFreeNetView() {
               </div>
             </div>
 
-            <div className="mt-4 bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs space-y-2">
+            <div className="mt-4 bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs space-y-3">
+              <div>
+                <label className="block text-slate-500 mb-1">Clave API Satelital (Suscripción):</label>
+                <input type="text" value={satApiKey} onChange={(e) => setSatApiKey(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-cyan-300" />
+              </div>
               <div className="flex justify-between"><span className="text-slate-500">Satélite:</span> <span className="font-mono text-slate-200">Starlink / SatCom-V2</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Latencia Promedio:</span> <span className="font-mono text-cyan-400">24.5 ms</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Ancho de Banda:</span> <span className="font-mono text-emerald-400">350 Mbps Down / 45 Mbps Up</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Latencia:</span> <span className="font-mono text-cyan-400">24.5 ms</span></div>
             </div>
           </div>
 
